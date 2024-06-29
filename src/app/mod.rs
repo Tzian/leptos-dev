@@ -34,7 +34,7 @@ pub fn App() -> impl IntoView
 		create_blocking_resource(move || access_token.get(), get_current_user);
 
 	view! {
-		<Stylesheet id="leptos" href="/pkg/leptos-development.css"/>
+		<Stylesheet id="leptos" href="/pkg/leptos-dev.css"/>
 
 		// sets the document title
 		<Title text="Welcome to AppName"/>

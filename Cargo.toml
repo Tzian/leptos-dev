@@ -61,7 +61,6 @@ ssr = [
   "dep:db_entities",
   "dep:db_services",
   "dep:migration",
-
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode
