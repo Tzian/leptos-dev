@@ -3,17 +3,20 @@ name    = "leptos-dev"
 version = "0.1.0"
 edition = "2021"
 
-
 [workspace]
 resolver = "2"
-members  = ["."]
-
+members  = [".", "db_entities", "db_services", "db_utils", "migration"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-
 [dependencies]
+# local dependencies
+db_utils    = { path = "db_utils" }
+db_entities = { path = "db_entities", optional = true }
+db_services = { path = "db_services", optional = true }
+migration   = { path = "migration", optional = true }
+
 # leptos dependencies
 leptos        = { version = "0.6", features = ["nightly", "experimental-islands"] }
 leptos_actix  = { version = "0.6", features = ["experimental-islands"], optional = true }
@@ -40,22 +43,24 @@ tracing-subscriber       = { version = "0.3", features = ["env-filter"] }
 
 jsonwebtoken = { version = "9.3.0", optional = true }
 
-
 [features]
 default = ["ssr"]
 csr = ["leptos/csr", "leptos_meta/csr", "leptos_router/csr"]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
 ssr = [
-    "dep:actix-files",
-    "dep:actix-web",
-    "dep:leptos_actix",
-    "leptos/ssr",
-    "leptos_meta/ssr",
-    "leptos_router/ssr",
-    "leptos-use/ssr",
-    "leptos-use/actix",
-    "dep:chrono",
-    "dep:jsonwebtoken",
+  "dep:actix-files",
+  "dep:actix-web",
+  "dep:leptos_actix",
+  "leptos/ssr",
+  "leptos_meta/ssr",
+  "leptos_router/ssr",
+  "leptos-use/ssr",
+  "leptos-use/actix",
+  "dep:chrono",
+  "dep:jsonwebtoken",
+  "dep:db_entities",
+  "dep:db_services",
+  "dep:migration",
 
 ]
 

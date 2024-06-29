@@ -55,7 +55,8 @@ pub fn NavBar() -> impl IntoView
 #[island]
 fn NavBarIsland(_show_signal: RwSignal<bool>) -> impl IntoView
 {
-	use crate::app::sidebar::Sidebar;
+	use crate::app::nav::sidebar::Sidebar;
+
 	let update_signal = move || _show_signal.set(!_show_signal.get());
 
 	view! {

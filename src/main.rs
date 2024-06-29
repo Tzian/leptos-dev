@@ -4,21 +4,27 @@ async fn main() -> std::io::Result<()>
 {
 	use actix_files::Files;
 	use actix_web::*;
-	use leptos::*;
+	use db_services::sea_orm::Database;
+	use leptos::{server_fn::actix::server_fn_paths, *};
 	use leptos_actix::{generate_route_list, LeptosRoutes};
-	use leptos_dev::app::{state::{AppState, DatabaseConnection},
-	                      *};
+	use leptos_dev::app::{state::AppState, *};
+	use migration::{Migrator, MigratorTrait};
 
 	tracing_subscriber::fmt::init();
 
 	dotenvy::dotenv().ok();
-	let _db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL is not set in .env file");
+	let db_url = std::env::var("DATABASE_URL").expect(
+	                                                  "DATABASE_URL is not set in .env file, set the variable and \
+	                                                   restart the program"
+	);
 
-	// mock connection to database
-	let conn = DatabaseConnection;
+	// establish connection to database and apply migrations
+	let conn =
+		Database::connect(&db_url).await.expect("Could not connect to database, check DATABASE_URL in .env file");
+	Migrator::up(&conn, None).await.expect("Could not apply database migrations");
 
 	// get configurations
-	let conf = get_configuration(None).await.unwrap();
+	let conf = get_configuration(None).await.expect("Could not get configurations");
 	let addr = conf.leptos_options.site_addr;
 
 	// Generate the list of routes in your Leptos App
@@ -26,6 +32,8 @@ async fn main() -> std::io::Result<()>
 	println!("listening on http://{}", &addr);
 
 	let state = AppState { conn };
+
+	logging::log!("{:?}", server_fn_paths().collect::<Vec<_>>());
 
 	HttpServer::new(move || {
 		let leptos_options = &conf.leptos_options;
@@ -40,7 +48,6 @@ async fn main() -> std::io::Result<()>
 		          .service(favicon)
 		          .leptos_routes(leptos_options.to_owned(), routes.to_owned(), App)
 		          .app_data(web::Data::new(leptos_options.to_owned()))
-		//.wrap(middleware::Compress::default())
 	}).bind(&addr)?
 	.run()
 	.await
@@ -48,7 +55,8 @@ async fn main() -> std::io::Result<()>
 
 #[cfg(feature = "ssr")]
 #[actix_web::get("favicon.ico")]
-async fn favicon(leptos_options: actix_web::web::Data<leptos::LeptosOptions>) -> actix_web::Result<actix_files::NamedFile>
+async fn favicon(leptos_options: actix_web::web::Data<leptos::LeptosOptions>)
+                 -> actix_web::Result<actix_files::NamedFile>
 {
 	let leptos_options = leptos_options.into_inner();
 	let site_root = &leptos_options.site_root;

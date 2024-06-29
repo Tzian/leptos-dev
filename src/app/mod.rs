@@ -1,12 +1,8 @@
-#[cfg(feature = "ssr")]
-pub mod jwt;
+pub mod dark_mode;
+pub mod nav;
+pub mod pages;
 #[cfg(feature = "ssr")]
 pub mod state;
-
-pub mod dark_mode;
-pub mod navbar;
-pub mod pages;
-pub mod sidebar;
 
 use leptos::*;
 use leptos_meta::*;
@@ -18,8 +14,8 @@ pub fn App() -> impl IntoView
 	use leptos_use::{use_cookie, utils::FromToStringCodec};
 
 	use crate::{app::{dark_mode::DarkModeToggle,
-	                  navbar::NavBar,
-	                  pages::{dash::dashboard::DashboardPage,
+	                  nav::navbar::NavBar,
+	                  pages::{dash::DashboardPage,
 	                          home::HomePage,
 	                          user::{login::LoginPage, register::RegisterPage},
 	                          NotFound}},
@@ -30,12 +26,15 @@ pub fn App() -> impl IntoView
 
 	// Determine if there is a logged in user cookie
 	let (access_token, _) = use_cookie::<String, FromToStringCodec>("leptos_access_token");
+	use db_utils::errors::ServicesError;
 
+	use crate::server_fns::user::DisplayUserModel;
 	// Needs to be a blocking resource because we need to wait for the cookie result before use in view
-	let usr = create_blocking_resource(move || access_token.get(), get_current_user);
+	let usr: Resource<Option<String>, Result<Option<DisplayUserModel>, ServerFnError<ServicesError>>> =
+		create_blocking_resource(move || access_token.get(), get_current_user);
 
 	view! {
-		<Stylesheet id="leptos" href="/pkg/leptos-dev.css"/>
+		<Stylesheet id="leptos" href="/pkg/leptos-development.css"/>
 
 		// sets the document title
 		<Title text="Welcome to AppName"/>

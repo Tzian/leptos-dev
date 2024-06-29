@@ -1,4 +1,5 @@
 use actix_web::FromRequest;
+use db_services::sea_orm::DatabaseConnection;
 use futures_util::future::{ok, Ready};
 
 #[derive(Debug, Clone)]
@@ -14,12 +15,8 @@ impl FromRequest for AppState
 
 	fn from_request(req: &actix_web::HttpRequest, _: &mut actix_web::dev::Payload) -> Self::Future
 	{
-		let data = req.app_data::<actix_web::web::Data<AppState>>().expect("Could not get data from request");
+		let data = req.app_data::<actix_web::web::Data<AppState>>().expect("Could not get data(AppState) from request");
 
 		ok(data.get_ref().clone())
 	}
 }
-
-// mock db
-#[derive(Debug, Clone)]
-pub struct DatabaseConnection;

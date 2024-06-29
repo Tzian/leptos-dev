@@ -8,10 +8,15 @@ pub async fn toggle_dark_mode(prefers_dark: bool) -> Result<bool, ServerFnError>
 	use actix_web::http::header::{HeaderMap, HeaderValue, SET_COOKIE};
 	use leptos_actix::{ResponseOptions, ResponseParts};
 
-	let response = use_context::<ResponseOptions>().expect("to have leptos_actix::ResponseOptions provided");
+	let response = use_context::<ResponseOptions>().expect("Failed to get ResponseOptions");
 	let mut response_parts = ResponseParts::default();
 	let mut headers = HeaderMap::new();
-	headers.insert(SET_COOKIE, HeaderValue::from_str(&format!("darkmode={prefers_dark}; Path=/")).expect("to create header value"));
+	headers.insert(
+	               SET_COOKIE,
+	               HeaderValue::from_str(&format!("darkmode={prefers_dark}; Path=/")).expect(
+		"Failed to create header value for cookie"
+	)
+	);
 	response_parts.headers = headers;
 
 	std::thread::sleep(std::time::Duration::from_millis(250));
@@ -35,7 +40,12 @@ fn initial_prefers_dark() -> bool
 {
 	use_context::<actix_web::HttpRequest>().and_then(|req| {
 		                                       req.cookies()
-		                                          .map(|cookies| cookies.iter().any(|cookie| cookie.name() == "darkmode" && cookie.value() == "true"))
+		                                          .map(|cookies| {
+			                                          cookies.iter()
+			                                                 .any(|cookie| {
+				                                                 cookie.name() == "darkmode" && cookie.value() == "true"
+			                                                 })
+		                                          })
 		                                          .ok()
 	                                       })
 	                                       .unwrap_or(false)

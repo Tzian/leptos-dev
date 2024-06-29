@@ -1,7 +1,7 @@
 use leptos_use::{use_cookie, utils::FromToStringCodec};
 
 use super::*;
-use crate::server_fns::user::current::Usr;
+use crate::server_fns::user::DisplayUserModel;
 
 #[component]
 pub fn DashboardPage() -> impl IntoView
@@ -47,7 +47,7 @@ pub fn DashboardPage() -> impl IntoView
 }
 
 #[island]
-pub fn DashOptions(user: Option<Usr>) -> impl IntoView
+pub fn DashOptions(user: Option<DisplayUserModel>) -> impl IntoView
 {
 	// counter example to check functions still work
 	let (counter, set_counter) = use_cookie::<u32, FromToStringCodec>("counter");
@@ -71,7 +71,13 @@ pub fn DashOptions(user: Option<Usr>) -> impl IntoView
 		set_counter.set(counter.get().map(|c| c - 1));
 	};
 
-	let username = user.unwrap().username;
+	let Some(user) = user
+	else
+	{
+		return view! { <div></div> }.into_view();
+	};
+
+	let username = user.username;
 	let mut no_of_calendar_events = "0";
 	if no_of_calendar_events == "0"
 	{
@@ -105,26 +111,26 @@ pub fn DashOptions(user: Option<Usr>) -> impl IntoView
 			</button>
 		</div>
 
-		<div class="mt-10">
+		<div class="mt-96">
 			<p>
 				Counter =
 				{move || counter.get().map(|c| c.to_string()).unwrap_or("—".to_string())}
 			</p>
 			<div>
-				<button class="sm-btn mt-3 h-8 w-28" on:click=move |_| increase()>
+				<button class="std-btn mt-3 w-28" on:click=move |_| increase()>
 					"Increase counter"
 				</button>
 			</div>
 			<div>
-				<button class="sm-btn mt-3 h-8 w-28" on:click=move |_| decrease()>
+				<button class="std-btn mt-3 w-28" on:click=move |_| decrease()>
 					"Decrease counter"
 				</button>
 			</div>
 			<div>
-				<button class="sm-btn mt-3 h-8 w-28" on:click=move |_| reset()>
+				<button class="std-btn mt-3 w-28" on:click=move |_| reset()>
 					"Reset"
 				</button>
 			</div>
 		</div>
-	}
+	}.into_view()
 }

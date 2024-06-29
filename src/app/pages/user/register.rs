@@ -23,72 +23,11 @@ fn Reg() -> impl IntoView
 			                                match result
 			                                {
 				                                Ok(_) => "Success:- New user registered".to_string(),
-			                                    Err(err) =>
-			                                    {
-				                                    let e = format!("{:?}", err);
-
-				                                    if e.contains("Username") && e.contains("already in use")
-				                                    {
-					                                    "Error:- Username is already in use".to_string()
-				                                    }
-				                                    else if e.contains("Email") && e.contains("already in use")
-				                                    {
-					                                    return "Error:- Email address already in use".to_string();
-				                                    }
-				                                    else if e.contains("Date of Birth")
-				                                    {
-					                                    return "Error:- Invalid Date of Birth, you must be 18 years or older to use this app!".to_string();
-				                                    }
-				                                    else if e.contains("Username") && e.contains("Invalid")
-				                                    {
-					                                    return "Error:- Usernames must be between 6 and 30 characters long".to_string();
-				                                    }
-				                                    else if e.contains("Name") && e.contains("Length")
-				                                    {
-					                                    return "Error:- First and last names must be at least 2 characters long".to_string();
-				                                    }
-				                                    else if e.contains("Email") && e.contains("Invalid")
-				                                    {
-					                                    return "Error:- Invalid email address".to_string();
-				                                    }
-				                                    else if e.contains("Password") && e.contains("short")
-				                                    {
-					                                    return "Error:- Password must be at least 8 characters long".to_string();
-				                                    }
-				                                    else if e.contains("lowercase")
-				                                    {
-					                                    return "Error:- Password must contain at least 1 lowercase letter".to_string();
-				                                    }
-				                                    else if e.contains("uppercase")
-				                                    {
-					                                    return "Error:- Password must contain at least 1 uppercase letter".to_string();
-				                                    }
-				                                    else if e.contains("number")
-				                                    {
-					                                    return "Error:- Password must contain at least 1 number".to_string();
-				                                    }
-				                                    else if e.contains("symbol")
-				                                    {
-					                                    return "Error:- Password must contain at least 1 of these symbols (!@#$%^&*)".to_string();
-				                                    }
-				                                    else if e.contains("duplicate") && e.contains("username")
-				                                    {
-					                                    return "Error:- Username is already in use".to_string();
-				                                    }
-				                                    else if e.contains("duplicate") && e.contains("email")
-				                                    {
-					                                    return "Error:- Email address already in use".to_string();
-				                                    }
-				                                    else
-				                                    {
-					                                    return "Error:- Database Error".to_string();
-				                                    }
-			                                    }
+			                                    Err(err) => err.to_string()
 			                                }
 		                                })
 	});
 
-	let mut show_password = false;
 	let (read_ptype, write_ptype) = create_signal("password");
 
 	view! {
@@ -186,8 +125,7 @@ fn Reg() -> impl IntoView
 						class="text-xs sm-btn"
 						type="button"
 						on:click=move |_| {
-							show_password = !show_password;
-							if show_password {
+							if read_ptype.get() == "password" {
 								write_ptype.set("text")
 							} else {
 								write_ptype.set("password")

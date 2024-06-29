@@ -1,0 +1,22 @@
+[package]
+name    = "db_entities"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+sea-orm = { version = "0.12.15", optional = true }
+
+serde      = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+time   = "0.3.36"
+chrono = { version = "0.4", optional = true }
+uuid   = { version = "1.8", features = ["v4"], optional = true }
+
+
+[features]
+default = ["ssr"]
+
+
+ssr = ["dep:sea-orm", "dep:chrono", "dep:uuid"]

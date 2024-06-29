@@ -1,0 +1,41 @@
+[package]
+name    = "db_services"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+db_utils    = { path = "../db_utils" }
+db_entities = { path = "../db_entities", optional = true }
+
+sea-orm = { version = "0.12.15", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros"], optional = true }
+leptos  = { version = "0.6", features = ["nightly"] }
+
+uuid   = { version = "1.8.0", features = ["v4"], optional = true }
+chrono = { version = "0.4.19", features = ["serde"], optional = true }
+sha256 = { version = "1.5.0", optional = true }
+tokio  = { version = "1.20.0", features = ["macros", "rt"], optional = true }
+
+jsonwebtoken  = { version = "9.3.0", optional = true }
+actix-web     = { version = "4", optional = true, features = ["macros"] }
+actix-web-lab = { version = "0.20", optional = true }
+
+serde   = { version = "1", features = ["derive"] }
+dotenvy = { version = "0.15.0" }
+
+
+[features]
+default = ["ssr"]
+
+
+ssr = [
+    "dep:sea-orm",
+    "dep:chrono",
+    "dep:uuid",
+    "dep:db_entities",
+    "dep:sha256",
+    "dep:tokio",
+    "dep:jsonwebtoken",
+    "dep:actix-web",
+    "dep:actix-web-lab",
+]

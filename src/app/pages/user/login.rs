@@ -26,10 +26,11 @@ fn Log() -> impl IntoView
 			                                 Err(err) =>
 			                                 {
 				                                 let e = format!("{:?}", err);
-
-				                                 if e.contains("NoUserFound")
+				                                 if e.contains("No Record Found")
 				                                 {
-					                                 "Error:- Unable to find a user with those credentials. Please check and try again!".to_string()
+					                                 "Error:- Unable to find a user with those credentials. Please \
+					                                  check and try again!"
+					                                        .to_string()
 				                                 }
 				                                 else
 				                                 {
@@ -40,7 +41,6 @@ fn Log() -> impl IntoView
 		                             })
 	});
 
-	let mut show_password = false;
 	let (read_ptype, write_ptype) = create_signal("password");
 
 	view! {
@@ -54,7 +54,7 @@ fn Log() -> impl IntoView
 		<div class="container mx-auto columns-1 text-center mt-10">
 			<ActionForm action=user_login_action>
 				<div>
-					<label class="input-label" for="_identity">
+					<label class="input-label" for="identity">
 						"Username or Email"
 					</label>
 				</div>
@@ -63,14 +63,14 @@ fn Log() -> impl IntoView
 						class="input-fields"
 						type="text"
 						class="ml-9"
-						name="_identity"
-						id="_identity"
+						name="identity"
+						id="identity"
 						required
 					/>
 				</div>
 
 				<div class="mt-3">
-					<label class="input-label" for="_password">
+					<label class="input-label" for="password">
 						"Password"
 					</label>
 				</div>
@@ -79,8 +79,8 @@ fn Log() -> impl IntoView
 						class="input-fields"
 						type=read_ptype
 						class="ml-10"
-						name="_password"
-						id="_password"
+						name="password"
+						id="password"
 						required
 					/>
 				</div>
@@ -90,8 +90,7 @@ fn Log() -> impl IntoView
 						class="text-xs sm-btn"
 						type="button"
 						on:click=move |_| {
-							show_password = !show_password;
-							if show_password {
+							if read_ptype.get() == "password" {
 								write_ptype.set("text")
 							} else {
 								write_ptype.set("password")

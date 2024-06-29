@@ -1,121 +1,46 @@
 use super::*;
 
 #[server]
-pub async fn get_current_user(token: Option<String>) -> Result<Option<Usr>, ServerFnError<AuthError>>
+pub async fn get_current_user(token: Option<String>) -> Result<Option<DisplayUserModel>, ServerFnError<ServicesError>>
 {
-	use crate::{app::{jwt::decode_jwt, state::AppState},
-	            server_fns::user::logout::logout_user};
+	use db_entities::user::Model;
+	use db_services::{utils::jwt::decode_jwt, UserQuery};
 
-	if token.is_none()
-	{
-		Ok(None)
-	}
+	use crate::{app::state::AppState, server_fns::user::logout::logout_user};
+
+	let Some(token_value) = token
 	else
 	{
-		let token = token.unwrap();
+		return Ok(None);
+	};
 
-		// decode token and get user id and email from it
-		let data = decode_jwt(token);
-		if data.is_err()
-		{
-			print!("Error decoding token - logging out");
-			let _ = logout_user().await;
-			return Ok(None);
-		}
-		let data = data.unwrap();
-
-		let state = leptos_actix::extract().await;
-
-		if state.is_err()
-		{
-			return Err(ServerFnError::WrappedServerError(AuthError::NoUserFound));
-		}
-
-		let state: AppState = state.unwrap();
-		let _conn = state.conn;
-
-		// find user by id
-		let user = move || -> anyhow::Result<Usr> { Ok(Usr { id: 1, username: "test".to_string(), email: "test@gmail.com".to_string() }) };
-
-		if user().is_err()
-		{
-			return Err(ServerFnError::WrappedServerError(AuthError::NoUserFound));
-		}
-
-		let user = user().unwrap();
-
-		if user.id != data.claims.id || user.email != data.claims.email
-		{
-			return Err(ServerFnError::WrappedServerError(AuthError::NoUserFound));
-		}
-
-		let current = Usr { id: user.id, username: user.username, email: user.email };
-
-		Ok(Some(current))
-	}
-}
-
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
-pub struct Usr
-{
-	pub id:       i32,
-	pub username: String,
-	pub email:    String
-}
-
-impl Default for Usr
-{
-	fn default() -> Self
+	// decode token and get user id and email from it
+	let Ok(data_value) = decode_jwt(token_value)
+	else
 	{
-		Self { id: -1, username: "".to_string(), email: "".to_string() }
-	}
-}
+		let _ = logout_user().await;
+		return Ok(None);
+	};
 
-impl FromStr for Usr
-{
-	type Err = String;
+	let state: AppState =
+		leptos_actix::extract().await.map_err(|e| {
+			                              ServerFnError::WrappedServerError(ServicesError::ConnectionError{con_err: e.to_string()})
+		                              })?;
+	let conn = state.conn;
 
-	fn from_str(s: &str) -> Result<Self, Self::Err>
+	// find user by id
+	let user: Model =
+		UserQuery::find_user_by_id(&conn, data_value.claims.id).await.map_err(|e| {
+			                                                              ServerFnError::WrappedServerError(ServicesError::QueryError{q_err: e.to_string()})
+		                                                              })?;
+
+	// check if user id and email match the token
+	if user.id != data_value.claims.id || user.email != data_value.claims.email
 	{
-		let usr: Usr = serde_json::from_str(s).map_err(|e| e.to_string())?;
-		Ok(usr)
+		return Ok(None);
 	}
-}
 
-impl std::fmt::Display for Usr
-{
-	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-	{
-		write!(f, "{}", serde_json::to_string(self).unwrap())
-	}
-}
+	let current = DisplayUserModel { id: user.id, username: user.username, email: user.email };
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
-pub enum AuthError
-{
-	NoUserFound
-}
-
-impl std::fmt::Display for AuthError
-{
-	fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result
-	{
-		match self
-		{
-			AuthError::NoUserFound => write!(f, "NoUserFound")
-		}
-	}
-}
-impl FromStr for AuthError
-{
-	type Err = String;
-
-	fn from_str(s: &str) -> Result<Self, Self::Err>
-	{
-		match s
-		{
-			"NoUserFound" => Ok(AuthError::NoUserFound),
-			_ => Err("Invalid AuthError".to_string())
-		}
-	}
+	Ok(Some(current))
 }

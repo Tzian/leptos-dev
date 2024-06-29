@@ -994,6 +994,10 @@ video {
   margin-top: 1.25rem;
 }
 
+.mt-96 {
+  margin-top: 24rem;
+}
+
 .inline {
   display: inline;
 }
@@ -1008,10 +1012,6 @@ video {
 
 .h-5 {
   height: 1.25rem;
-}
-
-.h-8 {
-  height: 2rem;
 }
 
 .w-28 {
